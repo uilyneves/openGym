@@ -1,0 +1,8 @@
+{
+  "name": "opengym",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}
