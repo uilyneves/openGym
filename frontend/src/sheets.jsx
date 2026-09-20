@@ -20,6 +20,8 @@ import { buildPlanBundle, parsePlan, mergePlan, printPlan } from './lib/plan-sha
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP } from './lib/onerm.js'
 import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS } from './lib/progression.js'
 import { MOBILE, shareExport } from './lib/mobile.js'
+import PlateCalculator from './components/PlateCalculator.jsx'
+import OneRMCalculator from './components/OneRMCalculator.jsx'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -380,6 +382,10 @@ function CustomExForm({ existing, prefill, onDone, close }) {
 }
 export const customExSheet = (existing, onDone, prefill) => ui().openSheet(close => <CustomExForm existing={existing} prefill={prefill} onDone={onDone} close={close} />)
 
+/* ============================ plate calculator sheet ============================ */
+export const plateCalculatorSheet = (initialWeight = 60) => ui().openSheet(close => <PlateCalculator initialWeight={initialWeight} close={close} />)
+export const oneRMCalculatorSheet = (initialWeight = 80, initialReps = 5) => ui().openSheet(close => <OneRMCalculator initialWeight={initialWeight} initialReps={initialReps} close={close} />)
+
 export function deleteCustomEx(ex, afterDelete) {
   if (S().active?.entries.some(e => e.id === ex.id)) { toast(t('Finish your current workout first')); return }
   confirmSheet({
@@ -404,6 +410,7 @@ export function deleteCustomEx(ex, afterDelete) {
 // Exercises already used in your routines or past workouts (for the "Chosen" filter + a marker).
 function usageMap(st) {
   const u = {}
+  ;(st.favorites || []).forEach(id => { u[id] = (u[id] || 0) + 10 })
   st.routines.forEach(r => r.ex.forEach(e => { u[e.id] = (u[e.id] || 0) + 1 }))
   st.workouts.forEach(w => w.entries.forEach(e => { u[e.id] = (u[e.id] || 0) + 1 }))
   return u
@@ -756,7 +763,9 @@ function WorkoutDetail({ w, close }) {
       return <div key={i} className="row" style={{ marginBottom: 12, alignItems: 'flex-start' }}>
         {ex && <Thumb ex={ex} />}
         <div className="grow"><div className="tt capitalize" style={{ fontWeight: 600 }}>{ex ? ex.n : (e.n || e.id)} {w.prs && w.prs.includes(e.id) && <span className="pr"><Icon name="trophy" />PR</span>}</div>
-          <div className="ss">{e.sets.filter(s => s.done).map(s => setLabel(e.id, s, e.target)).join('  ·  ') || t('no sets')}</div></div>
+          <div className="ss">{e.sets.filter(s => s.done).map(s => setLabel(e.id, s, e.target)).join('  ·  ') || t('no sets')}</div>
+          {e.note && <div className="small dim" style={{ marginTop: 2, fontStyle: 'italic' }}>{e.note}</div>}
+        </div>
       </div>
     })}
     <Button variant="danger" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.'), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => x.id !== w.id) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>
@@ -951,7 +960,7 @@ function doFinishWorkout() {
     // `target` (what the session prescribed) is kept alongside the sets: without it a
     // finished workout cannot say whether it hit its reps, and a timed session reads back
     // as "0 reps". It is what the progression engine works from.
-    entries: A.entries.map(e => ({ id: e.id, sets: e.sets, topW: e.topW || null, target: e.target || null })).filter(e => e.sets.some(s => s.done)),
+    entries: A.entries.map(e => ({ id: e.id, sets: e.sets, topW: e.topW || null, target: e.target || null, note: e.note || null })).filter(e => e.sets.some(s => s.done)),
     prs
   }
   w.vol = workoutVolume(w)

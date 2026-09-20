@@ -112,6 +112,9 @@ const P = {
   signOut: <><path d="M14.2 4.6H7a1.9 1.9 0 0 0-1.9 1.9v11a1.9 1.9 0 0 0 1.9 1.9h7.2" /><path d="m16.8 8.4 3.6 3.6-3.6 3.6M20.4 12H10.2" /></>,
   shuffle: <><path d="M3.6 7.2h2.9c1.6 0 2.8.9 3.8 2.4l3 4.8c1 1.5 2.2 2.4 3.8 2.4h2.9M3.6 16.8h2.9c1.6 0 2.8-.9 3.8-2.4l.7-1.1M15.6 9.9l.7-1.1c1-1.5 2.2-2.4 3.8-2.4h1.9" /><path d="m17.9 4.3 2.8 2.1-2.8 2.1M17.9 14.7l2.8 2.1-2.8 2.1" /></>,
   info: <><circle cx="12" cy="12" r="8.2" /><path d="M12 11v5.4" /><circle cx="12" cy="7.9" r=".9" fill="currentColor" stroke="none" /></>,
+  copy: <><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M4 16V5a1.5 1.5 0 0 1 1.5-1.5H16" /></>,
+  notes: <><path d="M6 3.8h12a1.6 1.6 0 0 1 1.6 1.6v13.2a1.6 1.6 0 0 1-1.6 1.6H6a1.6 1.6 0 0 1-1.6-1.6V5.4A1.6 1.6 0 0 1 6 3.8Z" /><path d="M8.8 8.4h6.4M8.8 12h6.4M8.8 15.6h4" /></>,
+  calc: <><rect x="5" y="3.6" width="14" height="16.8" rx="2.4" /><rect x="7.8" y="6.4" width="8.4" height="3.2" rx="0.8" /><path d="M8 12.8h2M14 12.8h2M8 16.4h2M14 16.4h2M11 12.8v3.6" /></>,
 }
 
 // A few keys are aliases so call sites can say what they mean.
@@ -121,6 +124,8 @@ P.exercises = P.magnifier
 P.weight = P.scale
 P.streak = P.flame
 P.done = P.check
+P.duplicate = P.copy
+P.calculator = P.calc
 
 export const ICON_NAMES = Object.keys(P)
 

@@ -10,7 +10,8 @@ import { wakeLockSupported } from '../lib/wakelock.js'
 import { t, LANGS, INSTR_LANGS } from '../lib/i18n.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { MOBILE, shareExport, syncReminder } from '../lib/mobile.js'
-import { loadStarterPlan, confirmSheet, importFromApp } from '../sheets.jsx'
+import { loadStarterPlan, confirmSheet, importFromApp, plateCalculatorSheet } from '../sheets.jsx'
+import { beepRestDone } from '../lib/sound.js'
 import Icon from '../components/Icon.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField } from '../components/ui.jsx'
 
@@ -128,8 +129,12 @@ export default function Settings() {
         </Row>
       )}
       <Row icon="bell" iconTint="var(--pink)" title={t('Sounds')}>
-        <Switch checked={!!S.sound} onChange={v => update(s => { s.sound = v })} />
+        <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+          <Button size="sm" variant="ghost" onClick={() => beepRestDone(true)}>{t('Test')}</Button>
+          <Switch checked={!!S.sound} onChange={v => update(s => { s.sound = v })} />
+        </div>
       </Row>
+      <Row icon="plate" iconTint="var(--blue)" title={t('Plate Calculator')} subtitle={t('Calculate barbell loading')} accessory="chevron" onClick={() => plateCalculatorSheet(60)} />
       {/* Two names for the same judgement, so the column asks in the scale you already think in.
           The (i) sits before the control — you read it on the way to the choice, not after it. */}
       <Row icon="target" iconTint="var(--purple)" title={t('Effort per set')}>

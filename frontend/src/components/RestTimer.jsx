@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 import { useUI } from '../store/useUI.js'
+import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { Button } from './ui.jsx'
+import Icon from './Icon.jsx'
 
 const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')
 
@@ -12,41 +14,64 @@ const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '
 export default function RestTimer() {
   const timer = useUI(s => s.timer)
   const work = useUI(s => s.work)
+  const sound = useStore(s => s.S.sound)
+  const update = useStore(s => s.update)
   const { addRest, stopRest, finishWorkEarly, stopWork } = useUI()
   const on = work || timer
+
   // The bar is fixed above the tab bar and floats over whatever is beneath it — during a
   // rest that was the next set's row. Extra bottom padding lets the page scroll clear.
   useEffect(() => {
     document.body.classList.toggle('resting', !!on)
     return () => document.body.classList.remove('resting')
   }, [!!on])
+
   if (!on) return null
   const pct = (on.left / on.total) * 100
+  const isCritical = on.left <= 5
+
+  const toggleSound = () => update(s => { s.sound = !s.sound })
 
   if (work) return (
-    <div id="timer" className="working">
+    <div id="timer" className={'working' + (isCritical ? ' critical' : '')}>
       <div className="t">{clock(work.left)}</div>
       <div className="grow">
         {work.label && <div className="lbl">{work.label}</div>}
         <div className="bar"><i style={{ width: pct + '%' }} /></div>
       </div>
+      <button
+        className={'iconbtn' + (sound ? ' acc' : ' dim')}
+        onClick={toggleSound}
+        style={{ width: 34, height: 34 }}
+        title={sound ? t('Sound on') : t('Sound off')}
+        aria-label={sound ? t('Sound on') : t('Sound off')}
+      >
+        <Icon name={sound ? 'bell' : 'bellSlash'} />
+      </button>
       <Button size="sm" onClick={stopWork}>{t('Cancel')}</Button>
       <Button size="sm" variant="primary" icon="check" onClick={finishWorkEarly}>{t('Done')}</Button>
     </div>
   )
-  // Three controls plus the clock don't fit one line on a phone — at 360px the bar is left
-  // with about 30px and stops saying anything. So the rest variant stacks: clock and bar
-  // read at a glance, controls get their own row. −15 and +15 sit together in number-line
-  // order; Skip is pushed to the far edge, away from the button you tap to buy more time.
+
   return (
-    <div id="timer" className="rest">
+    <div id="timer" className={'rest' + (isCritical ? ' critical' : '')}>
       <div className="head">
         <div className="t">{clock(timer.left)}</div>
         <div className="bar"><i style={{ width: pct + '%' }} /></div>
+        <button
+          className={'iconbtn' + (sound ? ' acc' : ' dim')}
+          onClick={toggleSound}
+          style={{ width: 34, height: 34, flex: 'none' }}
+          title={sound ? t('Sound on') : t('Sound off')}
+          aria-label={sound ? t('Sound on') : t('Sound off')}
+        >
+          <Icon name={sound ? 'bell' : 'bellSlash'} />
+        </button>
       </div>
       <div className="acts">
         <Button size="sm" icon="minus" onClick={() => addRest(-15)}>15s</Button>
         <Button size="sm" icon="plus" onClick={() => addRest(15)}>15s</Button>
+        <Button size="sm" icon="plus" onClick={() => addRest(30)}>30s</Button>
         <Button size="sm" variant="primary" className="skip" onClick={stopRest}>{t('Skip')}</Button>
       </div>
     </div>

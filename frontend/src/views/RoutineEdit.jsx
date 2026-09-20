@@ -33,6 +33,19 @@ export default function RoutineEdit() {
     cleanupSg(ex)
   })
 
+  const duplicate = () => {
+    const newR = {
+      id: uid(),
+      name: r.name + ' (' + t('copy') + ')',
+      emoji: r.emoji,
+      prog: r.prog,
+      ex: JSON.parse(JSON.stringify(r.ex))
+    }
+    update(s => { s.routines.push(newR) })
+    nav('/plan/r/' + newR.id)
+    useUI.getState().toast(t('Routine duplicated'))
+  }
+
   const units = supersetUnits(r.ex)
   const unitFirst = new Set(units.filter(u => u.length > 1).map(u => u[0]))
   const inSS = new Set(units.filter(u => u.length > 1).flat())
@@ -96,16 +109,19 @@ export default function RoutineEdit() {
     <div className="small dim row" style={{ margin: '10px 2px', gap: 5 }}><Icon name="link" style={{ fontSize: 13 }} />{t('Tap the link button on an exercise to superset it with the one above — you’ll do them back-to-back.')}</div>
     <Button variant="primary" onClick={() => exercisePicker(ex => exConfigSheet(ex, null, cfg => edit(x => { x.push({ id: ex.id, ...cfg }) }), null, r))} icon="plus">{t('Add exercise')}</Button>
     <div style={{ height: 10 }} />
-    <Button variant="danger" onClick={() => confirmSheet({
-      title: t('Delete routine?'), message: t('“{0}” and its exercises will be removed.', r.name), confirmText: t('Delete'), danger: true,
-      onConfirm: () => {
-        update(s => {
-          s.routines = s.routines.filter(x => x.id !== id)
-          Object.keys(s.week).forEach(k => { if (s.week[k] === id) delete s.week[k] })
-          Object.keys(s.dayPlan).forEach(k => { if (s.dayPlan[k] === id) delete s.dayPlan[k] })
-        })
-        nav('/plan')
-      }
-    })}>{t('Delete routine')}</Button>
+    <div className="row" style={{ gap: 8 }}>
+      <Button variant="tinted" icon="copy" onClick={duplicate}>{t('Duplicate routine')}</Button>
+      <Button variant="danger" icon="trash" onClick={() => confirmSheet({
+        title: t('Delete routine?'), message: t('“{0}” and its exercises will be removed.', r.name), confirmText: t('Delete'), danger: true,
+        onConfirm: () => {
+          update(s => {
+            s.routines = s.routines.filter(x => x.id !== id)
+            Object.keys(s.week).forEach(k => { if (s.week[k] === id) delete s.week[k] })
+            Object.keys(s.dayPlan).forEach(k => { if (s.dayPlan[k] === id) delete s.dayPlan[k] })
+          })
+          nav('/plan')
+        }
+      })}>{t('Delete')}</Button>
+    </div>
   </div>
 }

@@ -5,7 +5,7 @@ import { EXIDX } from '../lib/exercises.js'
 import { lastBW, streakWeeks, setLabel, modeOf, effortOf } from '../lib/history.js'
 import { fmtNum, fmtDate, fmtVol, todayISO, weekKey } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
-import { bwSheet, goalSheet, calendarSheet, workoutDetailSheet, WorkoutRow, bwDeltaColor } from '../sheets.jsx'
+import { bwSheet, goalSheet, calendarSheet, workoutDetailSheet, WorkoutRow, bwDeltaColor, oneRMCalculatorSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Heatmap from '../components/Heatmap.jsx'
 import Icon from '../components/Icon.jsx'
@@ -228,7 +228,10 @@ export default function Stats() {
       </div>
 
       <div className="card">
-        <h2>{t('Exercise progress')}</h2>
+        <div className="row between" style={{ marginBottom: 8 }}>
+          <h2 style={{ margin: 0 }}>{t('Exercise progress')}</h2>
+          <Button size="sm" variant="tinted" icon="calc" onClick={() => oneRMCalculatorSheet(onE1 && e1Best ? e1Best.est : exBest || 80, 5)}>{t('1RM Calc')}</Button>
+        </div>
         {exHist.length ? <>
           <div className="sect-b" style={{ marginBottom: 10 }}>
             <SelectRow title={t('Exercise')} sheetTitle={t('Exercise progress')} value={curEx} onChange={setExId}
@@ -255,6 +258,27 @@ export default function Stats() {
         </> : <div className="muted small">{t('Finish your first workout to see progress curves here.')}</div>}
       </div>
     </div>
+
+    {S.workouts.length > 1 && (() => {
+      const volPts = S.workouts
+        .filter(w => (w.vol || 0) > 0)
+        .slice(-20)
+        .map(w => ({ t: w.start, y: Math.round(w.vol || 0), d: w.d }))
+      if (volPts.length < 2) return null
+      return (
+        <div className="card">
+          <div className="row between" style={{ marginBottom: 8 }}>
+            <h2 style={{ margin: 0 }}>{t('Workout volume')} <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}>· {t('tonnage per session')}</span></h2>
+          </div>
+          <div className="chart">
+            <LineChart points={volPts} h={150} unit={S.unit} color="var(--acc)" />
+          </div>
+          <div className="small dim" style={{ marginTop: 8 }}>
+            {t('Total weight moved (weight × reps) across all exercises in each session.')}
+          </div>
+        </div>
+      )
+    })()}
 
     {S.workouts.length > 0 && <>
       <div className="row between" style={{ marginBottom: 10 }}>
