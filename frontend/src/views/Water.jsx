@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
-import { todayISO, formatDay } from '../lib/format.js'
+import { todayISO, fmtDate, fmtNum } from '../lib/format.js'
 import { getDiet, getDayLog, addWater } from '../lib/diet.js'
 import { supabase } from '../integrations/supabase/client.js'
 import { Button, Row, Section } from '../components/ui.jsx'
@@ -90,7 +90,7 @@ export default function Water() {
         >
           <Icon name="arrowLeft" />
         </button>
-        <span style={{ fontWeight: 600, fontSize: 15 }}>{date === todayISO() ? 'Hoje' : formatDay(date)}</span>
+        <span style={{ fontWeight: 600, fontSize: 15 }}>{date === todayISO() ? 'Hoje' : fmtDate(date, true)}</span>
         <button
           onClick={() => {
             const d = new Date(date)
