@@ -22,6 +22,7 @@ import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLIC
 import { MOBILE, shareExport } from './lib/mobile.js'
 import PlateCalculator from './components/PlateCalculator.jsx'
 import OneRMCalculator from './components/OneRMCalculator.jsx'
+import { MealFormSheet, FoodPickerSheet, DietTargetsSheet, WaterAdjustSheet } from './sheets/DietSheets.jsx'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -385,6 +386,24 @@ export const customExSheet = (existing, onDone, prefill) => ui().openSheet(close
 /* ============================ plate calculator sheet ============================ */
 export const plateCalculatorSheet = (initialWeight = 60) => ui().openSheet(close => <PlateCalculator initialWeight={initialWeight} close={close} />)
 export const oneRMCalculatorSheet = (initialWeight = 80, initialReps = 5) => ui().openSheet(close => <OneRMCalculator initialWeight={initialWeight} initialReps={initialReps} close={close} />)
+
+/* ============================ diet & water sheets ============================ */
+export const mealSheet = (initialMeal = null, defaultType = 'lunch', iso = todayISO()) =>
+  ui().openSheet(close => <MealFormSheet initialMeal={initialMeal} defaultType={defaultType} iso={iso} close={close} />)
+
+export const foodPickerSheet = (defaultType = 'lunch', iso = todayISO()) =>
+  ui().openSheet(close => (
+    <FoodPickerSheet
+      defaultType={defaultType}
+      iso={iso}
+      close={close}
+      openMealForm={() => mealSheet(null, defaultType, iso)}
+    />
+  ))
+
+export const dietTargetsSheet = () => ui().openSheet(close => <DietTargetsSheet close={close} />)
+export const waterAdjustSheet = (currentMl = 0, iso = todayISO()) =>
+  ui().openSheet(close => <WaterAdjustSheet currentMl={currentMl} iso={iso} close={close} />)
 
 export function deleteCustomEx(ex, afterDelete) {
   if (S().active?.entries.some(e => e.id === ex.id)) { toast(t('Finish your current workout first')); return }

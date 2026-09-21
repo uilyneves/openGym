@@ -9,6 +9,7 @@ import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 import { glyphOf } from '../lib/glyphs.js'
+import DietWidget from '../components/DietWidget.jsx'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -48,7 +49,10 @@ export default function Home() {
   return <div className="narrow">
     <div className="hdr">
       <div><h1>{user ? t('Hi {0}', user.name) : 'openGym'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
-      <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Settings')}><Icon name="gear" /></button>
+      <div className="row" style={{ gap: 6 }}>
+        <button className="iconbtn" onClick={() => nav('/diet')} aria-label={t('Diet & Nutrition')} title={t('Diet & Nutrition')}><Icon name="diet" /></button>
+        <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Settings')} title={t('Settings')}><Icon name="gear" /></button>
+      </div>
     </div>
 
     <div className="card">
@@ -73,6 +77,8 @@ export default function Home() {
           : <Icon name="plus" className="chev" />}
       </div>
     </div>
+
+    <DietWidget />
 
     {!S.routines.length && !S.active && (
       <div className="card">

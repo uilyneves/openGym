@@ -115,6 +115,10 @@ const P = {
   copy: <><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M4 16V5a1.5 1.5 0 0 1 1.5-1.5H16" /></>,
   notes: <><path d="M6 3.8h12a1.6 1.6 0 0 1 1.6 1.6v13.2a1.6 1.6 0 0 1-1.6 1.6H6a1.6 1.6 0 0 1-1.6-1.6V5.4A1.6 1.6 0 0 1 6 3.8Z" /><path d="M8.8 8.4h6.4M8.8 12h6.4M8.8 15.6h4" /></>,
   calc: <><rect x="5" y="3.6" width="14" height="16.8" rx="2.4" /><rect x="7.8" y="6.4" width="8.4" height="3.2" rx="0.8" /><path d="M8 12.8h2M14 12.8h2M8 16.4h2M14 16.4h2M11 12.8v3.6" /></>,
+  drop: <path d="M12 3.5c-3.6 4.6-6 8-6 11.5a6 6 0 0 0 12 0c0-3.5-2.4-6.9-6-11.5Z" />,
+  cup: <><path d="M6 4.5h12l-1.8 14.5a2 2 0 0 1-2 1.8H9.8a2 2 0 0 1-2-1.8Z" /><path d="M6 10h12" /></>,
+  utensils: <><path d="M6 4v6a2 2 0 0 0 2 2v8M10 4v6a2 2 0 0 1-2 2M8 4v4M15 4v16M15 4a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3" /></>,
+  apple: <><path d="M12 7.5c-2.4-2.2-6.5-1.5-6.5 3 0 5 4.5 9 6.5 9s6.5-4 6.5-9c0-4.5-4.1-5.2-6.5-3Z" /><path d="M12 7.5C12 4.5 14 3.5 15 3.5" /></>,
 }
 
 // A few keys are aliases so call sites can say what they mean.
@@ -123,6 +127,9 @@ P.settings = P.gear
 P.exercises = P.magnifier
 P.weight = P.scale
 P.streak = P.flame
+P.water = P.drop
+P.diet = P.utensils
+P.food = P.apple
 P.done = P.check
 P.duplicate = P.copy
 P.calculator = P.calc

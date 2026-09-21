@@ -10,7 +10,7 @@ import { wakeLockSupported } from '../lib/wakelock.js'
 import { t, LANGS, INSTR_LANGS } from '../lib/i18n.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { MOBILE, shareExport, syncReminder } from '../lib/mobile.js'
-import { loadStarterPlan, confirmSheet, importFromApp, plateCalculatorSheet } from '../sheets.jsx'
+import { loadStarterPlan, confirmSheet, importFromApp, plateCalculatorSheet, dietTargetsSheet } from '../sheets.jsx'
 import { beepRestDone } from '../lib/sound.js'
 import Icon from '../components/Icon.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField } from '../components/ui.jsx'
@@ -114,6 +114,12 @@ export default function Settings() {
           options={[{ value: 'kg', label: 'kg' }, { value: 'lb', label: 'lb' }]}
           value={S.unit} onChange={v => update(s => { s.unit = v })} />
       </Row>
+    </Section>
+
+    {/* ---------- diet & nutrition ---------- */}
+    <Section title={t('Diet & Hydration')} footer={t('Set your daily water intake, calorie target and macronutrient goals.')}>
+      <Row icon="diet" iconTint="var(--acc)" title={t('Diet & Nutrition Log')} subtitle={t('Log meals, food items, calories and macros')} accessory="chevron" onClick={() => nav('/diet')} />
+      <Row icon="target" iconTint="var(--yellow)" title={t('Nutrition & Water Goals')} subtitle={t('Smart macro calculator for cut, bulk or maintenance')} accessory="chevron" onClick={dietTargetsSheet} />
     </Section>
 
     {/* ---------- during a workout ---------- */}
