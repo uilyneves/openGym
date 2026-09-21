@@ -5,7 +5,7 @@ import { useUI } from '../store/useUI.js'
 import { todayISO, formatDay } from '../lib/format.js'
 import { calcDietSummary } from '../lib/diet.js'
 import { supabase } from '../integrations/supabase/client.js'
-import { Btn, Card, Row } from '../components/ui.jsx'
+import { Button, Row, Section } from '../components/ui.jsx'
 import Icon from '../components/Icon.jsx'
 
 export default function Water() {
@@ -73,9 +73,9 @@ export default function Water() {
             Controle de consumo de água e histórico diário
           </div>
         </div>
-        <Btn variant="ghost" icon="sparkles" onClick={() => nav('/ai')}>
+        <Button variant="ghost" icon="sparkles" onClick={() => nav('/ai')}>
           Coach IA
-        </Btn>
+        </Button>
       </div>
 
       {/* Seletor de Data */}
@@ -104,7 +104,7 @@ export default function Water() {
       </div>
 
       {/* Cartão de Destaque / Progresso de Hidratação */}
-      <Card style={{ padding: '20px 16px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+      <div className="card" style={{ padding: '20px 16px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{
           position: 'absolute',
           bottom: 0,
@@ -130,7 +130,7 @@ export default function Water() {
           <div style={{ height: '100%', width: `${pct}%`, background: 'var(--acc)', borderRadius: 5, transition: 'width 0.3s' }} />
         </div>
         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--acc)' }}>{pct}% Concluído</div>
-      </Card>
+      </div>
 
       {/* Ações Rápidas de Ingestão */}
       <div style={{ margin: '20px 0 12px', fontSize: 15, fontWeight: 600, color: 'var(--label-2)' }}>
@@ -182,14 +182,14 @@ export default function Water() {
       <div style={{ marginTop: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--label-2)' }}>Configurações de Hidratação</span>
-          <Btn variant="ghost" size="sm" onClick={() => openSheet('dietTargets')}>
+          <Button variant="ghost" size="sm" onClick={() => openSheet('dietTargets')}>
             Ajustar Meta
-          </Btn>
+          </Button>
         </div>
-        <Card>
-          <Row label="Meta Diária de Água" value={`${target} ml`} />
-          <Row label="Banco de Dados Supabase" value={loadingSync ? 'Sincronizando...' : 'Conectado (PostgreSQL)'} />
-        </Card>
+        <Section>
+          <Row title="Meta Diária de Água" value={`${target} ml`} />
+          <Row title="Banco de Dados Supabase" value={loadingSync ? 'Sincronizando...' : 'Conectado (PostgreSQL)'} />
+        </Section>
       </div>
     </div>
   )

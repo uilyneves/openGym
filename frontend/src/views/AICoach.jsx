@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { supabase } from '../integrations/supabase/client.js'
-import { Btn, Card, TextField } from '../components/ui.jsx'
+import { Button } from '../components/ui.jsx'
 import Icon from '../components/Icon.jsx'
 import { t } from '../lib/i18n.js'
 
@@ -218,14 +218,14 @@ Contexto atual do usuário no openGym:
             Modelo ativo: <strong>{customModel.trim() || model}</strong>
           </div>
         </div>
-        <Btn variant="ghost" size="sm" icon="gear" onClick={() => setShowConfig(!showConfig)}>
+        <Button variant="ghost" size="sm" icon="gear" onClick={() => setShowConfig(!showConfig)}>
           {showConfig ? 'Fechar' : 'Configurar'}
-        </Btn>
+        </Button>
       </div>
 
       {/* Painel de Configuração do OmniRoute */}
       {showConfig && (
-        <Card style={{ margin: '12px 0', padding: 14, background: 'var(--surface-2)' }}>
+        <div className="card" style={{ margin: '12px 0', padding: 14, background: 'var(--surface-2)' }}>
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8, color: 'var(--acc)' }}>
             Configurações da IA (OmniRoute / OpenAI API)
           </div>
@@ -285,11 +285,11 @@ Contexto atual do usuário no openGym:
           </div>
 
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-            <Btn variant="primary" size="sm" onClick={saveConfig}>
+            <Button variant="primary" size="sm" onClick={saveConfig}>
               Salvar Configurações
-            </Btn>
+            </Button>
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Lista de Mensagens */}
@@ -362,9 +362,9 @@ Contexto atual do usuário no openGym:
             outline: 'none'
           }}
         />
-        <Btn variant="primary" onClick={sendMessage} disabled={loading || !input.trim()}>
+        <Button variant="primary" onClick={sendMessage} disabled={loading || !input.trim()}>
           <Icon name="arrowRight" />
-        </Btn>
+        </Button>
       </div>
     </div>
   )
