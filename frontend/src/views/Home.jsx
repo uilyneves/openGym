@@ -51,8 +51,15 @@ export default function Home() {
     <div className="hdr">
       <div><h1>{user ? t('Hi {0}', user.name) : 'openGym'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
       <div className="row" style={{ gap: 6 }}>
-        <button className="iconbtn" onClick={() => nav('/diet')} aria-label={t('Diet & Nutrition')} title={t('Diet & Nutrition')}><Icon name="diet" /></button>
-        <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Settings')} title={t('Settings')}><Icon name="gear" /></button>
+        <button className="iconbtn" onClick={() => nav('/profile')} aria-label={t('Perfil')} title={t('Perfil')}>
+          <Icon name="user" />
+        </button>
+        <button className="iconbtn" onClick={() => nav('/diet')} aria-label={t('Diet & Nutrition')} title={t('Diet & Nutrition')}>
+          <Icon name="diet" />
+        </button>
+        <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Settings')} title={t('Settings')}>
+          <Icon name="gear" />
+        </button>
       </div>
     </div>
 

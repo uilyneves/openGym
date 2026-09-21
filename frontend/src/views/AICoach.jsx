@@ -120,13 +120,42 @@ export default function AICoach() {
       console.warn('Erro ao salvar no Supabase:', e)
     }
 
-    // Contexto do usuário para enriquecer o prompt da IA
-    const systemPrompt = `Você é um assistente de elite em musculação, treinamento físico, hipertrofia, nutrição e hidratação.
-Responda sempre em Português do Brasil com clareza, empatia, base científica e formatação elegante em Markdown.
-Contexto atual do usuário no openGym:
-- Metas de Dieta: Calorias=${S?.dietTargets?.calories || 2200}kcal, Proteínas=${S?.dietTargets?.protein || 150}g, Carboidratos=${S?.dietTargets?.carbs || 250}g, Gorduras=${S?.dietTargets?.fats || 65}g.
+    // Contexto do perfil do usuário para enriquecer o prompt da IA
+    let profileContext = ''
+    try {
+      const p = JSON.parse(localStorage.getItem('user_fitness_profile') || '{}')
+      if (p.name || p.weightKg || p.fitnessGoal) {
+        profileContext = `
+DADOS DO PERFIL DO ATLETA (ANAMNESE):
+- Nome: ${p.name || 'Atleta'}
+- Idade: ${p.age || 'Não informada'} anos | Gênero: ${p.gender || 'Não informado'}
+- Altura: ${p.heightCm || 'Não informada'} cm | Peso Atual: ${p.weightKg || 'Não informado'} kg
+- % de Gordura (BF): ${p.bodyFat ? p.bodyFat + '%' : 'Não avaliado'}
+- Objetivo Principal: ${p.fitnessGoal || 'Hipertrofia'}
+- Experiência: ${p.experience || 'Intermediário'}
+- Frequência de Treino: ${p.daysPerWeek || 4} dias por semana
+- Nível de Atividade Diária: ${p.activityLevel || 'Moderado'}
+- Restrições Alimentares / Alergias: ${p.restrictions || 'Nenhuma'}
+- Lesões ou Limitações: ${p.injuries || 'Nenhuma'}
+- Observações e Preferências: ${p.notes || 'Nenhuma'}
+`
+      }
+    } catch {}
+
+    const systemPrompt = `Você é um treinador de elite e nutricionista esportivo pessoal com inteligência artificial, integrado ao openGym via OmniRoute.
+Responda sempre em Português do Brasil com clareza, empatia, base científica (hipertrofia, periodização, nutrição e hidratação) e formatação rica e elegante em Markdown.
+
+${profileContext}
+
+METAS ATUAIS REGISTRADAS NO OPENGYM:
+- Dieta: Calorias=${S?.dietTargets?.calories || 2200}kcal, Proteínas=${S?.dietTargets?.protein || 150}g, Carboidratos=${S?.dietTargets?.carbs || 250}g, Gorduras=${S?.dietTargets?.fats || 65}g.
 - Meta de Água: ${S?.dietTargets?.waterMl || 3000}ml/dia.
-- Unidade de peso: ${S?.unit || 'kg'}.`
+- Unidade de medida: ${S?.unit || 'kg'}.
+
+Ao montar ou sugerir treinos e dietas:
+1. Respeite estritamente as lesões, limitações articulares e restrições alimentares do atleta.
+2. Adapte as calorias e macronutrientes ao peso, altura, idade e objetivo (cutting/bulking/manutenção).
+3. Especifique séries, repetições, faixas de RPE/RIR e descanso recomendado quando for montar rotinas.`
 
     try {
       if (!apiKey) {
