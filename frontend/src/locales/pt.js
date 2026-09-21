@@ -668,4 +668,13 @@ export default {
   'Create one, or let the AI build it.': 'Crie uma, ou deixe a IA montar para você.',
   'OmniRoute integration (AI)': 'Integração OmniRoute (IA)',
   'API key, endpoint and model for every AI feature': 'Chave, endpoint e modelo para todos os recursos de IA',
+  'Perfil': 'Perfil',
+  'IA Coach': 'Coach IA',
+  'Diet & Nutrition': 'Dieta & Nutrição',
+  'Nutrition & Water Goals': 'Metas de Nutrição & Água',
+  'Diet & Nutrition Log': 'Registro de Dieta & Nutrição',
+  'Log meals, food items, calories and macros': 'Registre refeições, alimentos, calorias e macros',
+  'Smart macro calculator for cut, bulk or maintenance': 'Calculadora inteligente de macros para cutting, bulking ou manutenção',
+  'Diet & Hydration': 'Dieta & Hidratação',
+  'Set your daily water intake, calorie target and macronutrient goals.': 'Defina sua ingestão diária de água, meta calórica e macronutrientes.',
 }

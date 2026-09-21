@@ -31,7 +31,8 @@ export function profileMissing(p = getFitnessProfile()) {
 // Merge partial profile data into the anamnesis (local first, cloud best-effort)
 // and log the weight so the AI always works with a fresh bodyweight series.
 export async function saveFitnessProfile(patch) {
-  const next = { ...getFitnessProfile(), ...patch, updatedAt: new Date().toISOString() }
+  const current = getFitnessProfile()
+  const next = { ...current, ...patch, updatedAt: new Date().toISOString() }
   localStorage.setItem('user_fitness_profile', JSON.stringify(next))
   if (patch.weightKg && Number(patch.weightKg) > 0) {
     try { useStore.getState().logBW(Number(patch.weightKg), todayISO()) } catch { /* store not ready */ }
@@ -39,15 +40,65 @@ export async function saveFitnessProfile(patch) {
   try {
     await supabase.from('profiles').insert([{
       name: next.name || null,
+      avatar_url: next.avatarUrl || null,
       age: next.age ? Number(next.age) : null,
       gender: next.gender || null,
       height_cm: next.heightCm ? Number(next.heightCm) : null,
       weight_kg: next.weightKg ? Number(next.weightKg) : null,
+      body_fat_pct: next.bodyFat ? Number(next.bodyFat) : null,
       fitness_goal: next.fitnessGoal || null,
+      activity_level: next.activityLevel || null,
+      workout_days_per_week: next.daysPerWeek ? Number(next.daysPerWeek) : 4,
+      workout_experience: next.experience || null,
+      dietary_restrictions: next.restrictions || null,
+      injuries_limitations: next.injuries || null,
+      preferences_notes: next.notes || null,
       updated_at: new Date().toISOString()
     }])
   } catch { /* offline — local copy is enough */ }
   return next
+}
+
+/**
+ * Pull the fitness profile from Supabase if local is missing core fields.
+ */
+export async function syncFitnessProfileFromCloud() {
+  const local = getFitnessProfile()
+  if (local.weightKg && local.heightCm && local.age && local.fitnessGoal) return local
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+    if (!error && data && data.length > 0) {
+      const p = data[0]
+      const merged = {
+        ...local,
+        name: p.name || local.name || '',
+        avatarUrl: p.avatar_url || local.avatarUrl || '',
+        age: p.age ?? local.age ?? '',
+        gender: p.gender || local.gender || 'masculino',
+        heightCm: p.height_cm ?? local.heightCm ?? '',
+        weightKg: p.weight_kg ?? local.weightKg ?? '',
+        bodyFat: p.body_fat_pct ?? local.bodyFat ?? '',
+        fitnessGoal: p.fitness_goal || local.fitnessGoal || 'hipertrofia',
+        activityLevel: p.activity_level || local.activityLevel || 'moderado',
+        daysPerWeek: p.workout_days_per_week ?? local.daysPerWeek ?? 4,
+        experience: p.workout_experience || local.experience || 'intermediario',
+        restrictions: p.dietary_restrictions || local.restrictions || '',
+        injuries: p.injuries_limitations || local.injuries || '',
+        notes: p.preferences_notes || local.notes || '',
+        updatedAt: p.updated_at
+      }
+      localStorage.setItem('user_fitness_profile', JSON.stringify(merged))
+      if (merged.weightKg && Number(merged.weightKg) > 0) {
+        try { useStore.getState().logBW(Number(merged.weightKg), todayISO()) } catch {}
+      }
+      return merged
+    }
+  } catch {}
+  return local
 }
 
 // Everything the AI should know about the athlete: anamnesis + live openGym data.

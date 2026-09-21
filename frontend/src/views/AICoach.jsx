@@ -4,7 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { supabase } from '../integrations/supabase/client.js'
 import { aiConfig, syncAIConfigFromCloud, aiChat, isAIConnected } from '../lib/ai.js'
-import { buildBodyContext, profileMissing } from '../lib/aiPlanner.js'
+import { buildBodyContext, profileMissing, getFitnessProfile, syncFitnessProfileFromCloud } from '../lib/aiPlanner.js'
 import { aiWorkoutSheet, aiDietSheet } from '../sheets.jsx'
 import { AIConfigForm } from '../sheets/AISheets.jsx'
 import { Button } from '../components/ui.jsx'
@@ -36,7 +36,8 @@ export default function AICoach() {
   const [customModel, setCustomModel] = useState('')
   const [showConfig, setShowConfig] = useState(!cfg.apiKey)
   const [connected, setConnected] = useState(!!cfg.apiKey)
-  const profileOk = profileMissing().length === 0
+  const [profile, setProfile] = useState(() => getFitnessProfile())
+  const profileOk = profileMissing(profile).length === 0
   const activeModel = customModel.trim() || aiConfig().model
 
   // Fresh device / new session: pull the OmniRoute credentials this user saved
@@ -51,6 +52,9 @@ export default function AICoach() {
         }
       })
     }
+    syncFitnessProfileFromCloud().then(p => {
+      if (p) setProfile(p)
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -206,7 +210,7 @@ Ao montar ou sugerir treinos e dietas:
           <div style={{ fontSize: 12, color: 'var(--label-2)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
             <span className="dot" style={{ width: 8, height: 8, borderRadius: 99, background: connected ? 'var(--green)' : 'var(--yellow)', display: 'inline-block' }} />
             {connected
-              ? <>OmniRoute: <strong>{customModel.trim() || model}</strong></>
+              ? <span>OmniRoute: <strong>{customModel.trim() || model}</strong> <span style={{ color: 'var(--green)', fontSize: 11, fontWeight: 600 }}>● Ativo</span></span>
               : <span style={{ color: 'var(--yellow)' }}>Modo demonstração — configure sua chave</span>}
           </div>
         </div>
@@ -247,7 +251,11 @@ Ao montar ou sugerir treinos e dietas:
           <span className="lrow-i" style={{ background: profileOk ? 'color-mix(in srgb, var(--teal) 16%, transparent)' : 'color-mix(in srgb, var(--yellow) 20%, transparent)', color: profileOk ? 'var(--teal)' : 'var(--yellow)' }}><Icon name="personCircle" /></span>
           <span style={{ minWidth: 0 }}>
             <span style={{ display: 'block', fontWeight: 600, fontSize: 13 }}>Meu perfil</span>
-            <span className="small dim" style={{ fontSize: 11 }}>{profileOk ? 'Completo para a IA' : 'Faltam dados — toque'}</span>
+            <span className="small dim" style={{ fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+              {profileOk
+                ? `${profile.weightKg ? profile.weightKg + 'kg' : ''}${profile.heightCm ? ' · ' + profile.heightCm + 'cm' : ''}${profile.fitnessGoal ? ' · ' + profile.fitnessGoal : ''}`
+                : 'Faltam dados — toque para preencher'}
+            </span>
           </span>
         </button>
       </div>

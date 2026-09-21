@@ -6,7 +6,7 @@ import { DAYN } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { isAIConnected, aiConfig, saveAIConfig, saveAIConfigToCloud, testAIConnection, syncAIConfigFromCloud, DEFAULT_MODELS } from '../lib/ai.js'
 import { nav } from '../lib/nav.js'
-import { generateWorkoutPlan, generateDietPlan, applyWorkoutPlan, applyDietPlan, getFitnessProfile, profileMissing, saveFitnessProfile } from '../lib/aiPlanner.js'
+import { generateWorkoutPlan, generateDietPlan, applyWorkoutPlan, applyDietPlan, getFitnessProfile, profileMissing, saveFitnessProfile, syncFitnessProfileFromCloud } from '../lib/aiPlanner.js'
 import Icon from '../components/Icon.jsx'
 import { Button, NumberField, TextField, Segmented } from '../components/ui.jsx'
 
@@ -215,24 +215,52 @@ export function QuickProfileCard({ onSaved }) {
   const [weight, setWeight] = useState(p.weightKg ? Number(p.weightKg) : null)
   const [height, setHeight] = useState(p.heightCm ? Number(p.heightCm) : null)
   const [age, setAge] = useState(p.age ? Number(p.age) : null)
+  const [gender, setGender] = useState(p.gender || 'masculino')
   const [goal, setGoal] = useState(p.fitnessGoal || 'emagrecimento')
+  const [injuries, setInjuries] = useState(p.injuries || '')
+  const [showMore, setShowMore] = useState(false)
   const [saving, setSaving] = useState(false)
   const missing = profileMissing(p)
+
+  useEffect(() => {
+    syncFitnessProfileFromCloud().then(prof => {
+      if (prof) {
+        if (weight == null && prof.weightKg) setWeight(Number(prof.weightKg))
+        if (height == null && prof.heightCm) setHeight(Number(prof.heightCm))
+        if (age == null && prof.age) setAge(Number(prof.age))
+        if (prof.gender) setGender(prof.gender)
+        if (prof.fitnessGoal) setGoal(prof.fitnessGoal)
+        if (prof.injuries) setInjuries(prof.injuries)
+      }
+    })
+  }, [])
 
   const save = async () => {
     if (!weight || !height || !age) { toast('Preencha peso, altura e idade para a IA personalizar seu plano.'); return }
     setSaving(true)
     try {
-      await saveFitnessProfile({ weightKg: weight, heightCm: height, age, fitnessGoal: goal })
+      await saveFitnessProfile({
+        weightKg: weight,
+        heightCm: height,
+        age,
+        gender,
+        fitnessGoal: goal,
+        injuries: injuries.trim()
+      })
       toast('Perfil salvo! A IA já vai usar seus dados.')
       onSaved && onSaved()
     } finally { setSaving(false) }
   }
 
   return <div className="card" style={{ padding: 14, background: 'color-mix(in srgb, var(--yellow) 8%, var(--surface-2))' }}>
-    <div className="row" style={{ gap: 8, marginBottom: 8 }}>
-      <Icon name="personCircle" style={{ color: 'var(--yellow)', fontSize: 18 }} />
-      <strong style={{ fontSize: 14 }}>Complete seu perfil para a IA</strong>
+    <div className="row between" style={{ marginBottom: 8 }}>
+      <div className="row" style={{ gap: 8 }}>
+        <Icon name="personCircle" style={{ color: 'var(--yellow)', fontSize: 18 }} />
+        <strong style={{ fontSize: 14 }}>Complete seu perfil para a IA</strong>
+      </div>
+      <Button variant="ghost" size="sm" onClick={() => setShowMore(m => !m)} style={{ fontSize: 11, padding: '2px 6px' }}>
+        {showMore ? 'Menos' : '+ Detalhes'}
+      </Button>
     </div>
     <div className="muted small" style={{ marginBottom: 10 }}>
       {missing.length === 4
@@ -240,11 +268,11 @@ export function QuickProfileCard({ onSaved }) {
         : `Faltando: ${missing.map(f => ({ weightKg: 'peso', heightCm: 'altura', age: 'idade', fitnessGoal: 'objetivo' }[f])).join(', ')}.`}
     </div>
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-      <div style={{ flex: '1 1 90px' }}>
+      <div style={{ flex: '1 1 80px' }}>
         <div className="sub" style={{ marginBottom: 4 }}>Peso (kg)</div>
         <NumberField decimal value={weight} onChange={setWeight} />
       </div>
-      <div style={{ flex: '1 1 90px' }}>
+      <div style={{ flex: '1 1 80px' }}>
         <div className="sub" style={{ marginBottom: 4 }}>Altura (cm)</div>
         <NumberField decimal value={height} onChange={setHeight} />
       </div>
@@ -253,16 +281,31 @@ export function QuickProfileCard({ onSaved }) {
         <NumberField decimal={false} value={age} onChange={setAge} />
       </div>
     </div>
-    <div style={{ marginTop: 10 }}>
-      <div className="sub" style={{ marginBottom: 4 }}>Objetivo principal</div>
-      <Segmented value={goal} onChange={setGoal} options={[
-        { value: 'emagrecimento', label: 'Emagrecer' },
-        { value: 'hipertrofia', label: 'Ganhar massa' },
-        { value: 'saude', label: 'Saúde' }
-      ]} />
+    <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+      <div style={{ flex: '1 1 120px' }}>
+        <div className="sub" style={{ marginBottom: 4 }}>Gênero</div>
+        <Segmented value={gender} onChange={setGender} options={[
+          { value: 'masculino', label: 'Masc' },
+          { value: 'feminino', label: 'Fem' }
+        ]} />
+      </div>
+      <div style={{ flex: '1 1 160px' }}>
+        <div className="sub" style={{ marginBottom: 4 }}>Objetivo</div>
+        <Segmented value={goal} onChange={setGoal} options={[
+          { value: 'emagrecimento', label: 'Secar' },
+          { value: 'hipertrofia', label: 'Massa' },
+          { value: 'saude', label: 'Saúde' }
+        ]} />
+      </div>
     </div>
-    <div style={{ marginTop: 12 }}>
-      <Button variant="primary" size="sm" icon="check" disabled={saving} onClick={save}>{saving ? 'Salvando…' : 'Salvar dados'}</Button>
+    {showMore && (
+      <div style={{ marginTop: 10 }}>
+        <div className="sub" style={{ marginBottom: 4 }}>Lesões ou limitações (opcional)</div>
+        <TextField value={injuries} onChange={setInjuries} placeholder="Ex: dor no joelho direito, hérnia de disco..." />
+      </div>
+    )}
+    <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
+      <Button variant="primary" size="sm" icon="check" disabled={saving} onClick={save}>{saving ? 'Salvando…' : 'Salvar perfil'}</Button>
     </div>
   </div>
 }
