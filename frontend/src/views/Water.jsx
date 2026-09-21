@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { todayISO, formatDay } from '../lib/format.js'
-import { calcDietSummary } from '../lib/diet.js'
+import { getDiet, getDayLog, addWater } from '../lib/diet.js'
 import { supabase } from '../integrations/supabase/client.js'
 import { Button, Row, Section } from '../components/ui.jsx'
 import Icon from '../components/Icon.jsx'
@@ -11,8 +11,7 @@ import Icon from '../components/Icon.jsx'
 export default function Water() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
-  const addWater = useStore(s => s.addWater)
-  const setWaterTarget = useStore(s => s.setWaterTarget)
+  const update = useStore(s => s.update)
   const openSheet = useUI(s => s.openSheet)
   const toast = useUI(s => s.toast)
 
@@ -20,13 +19,14 @@ export default function Water() {
   const [syncedLogs, setSyncedLogs] = useState([])
   const [loadingSync, setLoadingSync] = useState(false)
 
-  const currentSummary = calcDietSummary(S, date)
-  const target = S?.dietTargets?.waterMl || 3000
-  const consumed = currentSummary.waterConsumed
+  const diet = getDiet(S)
+  const dayLog = getDayLog(S, date)
+  const target = diet.waterTarget || 2500
+  const consumed = dayLog.water || 0
   const pct = Math.min(100, Math.round((consumed / target) * 100))
 
   const handleLog = async (ml) => {
-    addWater(ml, date)
+    addWater(update, ml, date)
     toast(`+${ml}ml de água registrado!`)
     try {
       await supabase.from('water_logs').insert([{
@@ -182,7 +182,7 @@ export default function Water() {
       <div style={{ marginTop: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--label-2)' }}>Configurações de Hidratação</span>
-          <Button variant="ghost" size="sm" onClick={() => openSheet('dietTargets')}>
+          <Button variant="ghost" size="sm" onClick={() => openSheet('dietGoal')}>
             Ajustar Meta
           </Button>
         </div>
