@@ -3,13 +3,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm run dev --prefix frontend",
-    "build": "npm run build --prefix frontend",
-    "start": "npm run start --prefix api",
-    "preview": "npm run preview --prefix frontend",
-    "test": "npm run test --prefix frontend"
+    "dev": "pnpm --filter opengym-frontend dev",
+    "build": "pnpm --filter opengym-frontend build",
+    "start": "pnpm --filter gym-api start",
+    "preview": "pnpm --filter opengym-frontend preview",
+    "test": "pnpm --filter opengym-frontend test"
   },
   "devDependencies": {
     "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "vite": "^8.3.0"
   }
 }

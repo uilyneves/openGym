@@ -376,4 +376,6 @@ allowBuilds:
 
 packages:
   - .
+  - frontend
+  - api
 minimumReleaseAge: 1440
