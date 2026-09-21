@@ -93,7 +93,7 @@ export function Switch({ checked, onChange, disabled }) {
 /* ============================ segmented ============================ */
 
 // options: [{ value, label, icon? }]  — the selected pill slides between cells.
-export function Segmented({ options, value, onChange, className = '' }) {
+export function Segmented({ options, value, onChange, className = '', disabled = false }) {
   const i = Math.max(0, options.findIndex(o => o.value === value))
   return (
     <div className={'seg ' + className} style={{ '--n': options.length, '--i': i }}>
@@ -103,6 +103,7 @@ export function Segmented({ options, value, onChange, className = '' }) {
           key={o.value}
           className={o.value === value ? 'on' : ''}
           aria-pressed={o.value === value}
+          disabled={disabled}
           onClick={() => onChange(o.value)}
         >
           {o.icon && <Icon name={o.icon} />}

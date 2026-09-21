@@ -43,6 +43,7 @@ function EditProfileSheet({ profile, onSave, close }) {
   const [injuries, setInjuries] = useState(profile?.injuries_limitations || '')
   const [notes, setNotes] = useState(profile?.preferences_notes || '')
   const [saving, setSaving] = useState(false)
+  const canEditAccess = profile?.role !== 'admin'
 
   const handleSubmit = async (e) => {
     e?.preventDefault?.()
@@ -59,8 +60,7 @@ function EditProfileSheet({ profile, onSave, close }) {
     const payload = {
       name: name.trim(),
       email: email.trim() || null,
-      role,
-      status,
+      ...(canEditAccess ? { role, status } : {}),
       age: age ? Number(age) : null,
       gender,
       height_cm: heightCm ? Number(heightCm) : null,
@@ -100,6 +100,9 @@ function EditProfileSheet({ profile, onSave, close }) {
           {isNew ? 'Criar Novo Perfil' : `Editar: ${profile.name}`}
         </h2>
       </div>
+      {isNew && <div className="card muted small" style={{ padding: 12, marginBottom: 14 }}>
+        Perfis são criados quando o usuário se cadastra. Aqui você pode editar permissões e dados após o cadastro.
+      </div>}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>
@@ -123,6 +126,7 @@ function EditProfileSheet({ profile, onSave, close }) {
               ]}
               value={role}
               onChange={setRole}
+              disabled={!canEditAccess}
             />
           </div>
           <div style={{ flex: 1 }}>
@@ -416,7 +420,7 @@ export default function Admin() {
 
   // Ações
   const handleCreateProfile = () => {
-    openSheet(close => <EditProfileSheet profile={null} onSave={loadProfiles} close={close} />)
+    toast('Os perfis são criados no cadastro do usuário. Depois, use a lista para ajustar permissões e dados.')
   }
 
   const handleEditProfile = (profile) => {
@@ -436,6 +440,10 @@ export default function Admin() {
   }
 
   const handleStatusToggle = async (profile) => {
+    if (profile.role === 'admin') {
+      toast('Por segurança, o status de administradores não pode ser alterado aqui.')
+      return
+    }
     const newStatus = profile.status === 'inactive' ? 'active' : 'inactive'
     try {
       const { error } = await supabase
@@ -451,6 +459,10 @@ export default function Admin() {
   }
 
   const handleDeleteProfile = (profile) => {
+    if (profile.role === 'admin') {
+      toast('Por segurança, administradores não podem ser excluídos aqui.')
+      return
+    }
     confirmSheet({
       title: `Excluir perfil de ${profile.name}?`,
       message: 'Essa ação removerá o perfil e dados associados permanentemente do banco.',

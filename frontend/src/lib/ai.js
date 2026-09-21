@@ -66,7 +66,7 @@ export async function syncAIConfigFromCloud() {
       .select('omniroute_api_key, omniroute_endpoint, omniroute_model')
       .eq('user_id', user.user.id)
       .maybeSingle()
-    const row = !error && data && data[0]
+    const row = !error ? data : null
     if (row && row.omniroute_api_key) {
       saveAIConfig({ apiKey: row.omniroute_api_key, endpoint: row.omniroute_endpoint, model: row.omniroute_model })
       return aiConfig()

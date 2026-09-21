@@ -64,14 +64,16 @@ export default function Profile() {
     async function loadRemoteProfile() {
       setLoading(true)
       try {
+        const { data: user } = await supabase.auth.getUser()
+        if (!user?.user) return
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .order('updated_at', { ascending: false })
-          .limit(1)
+          .eq('user_id', user.user.id)
+          .maybeSingle()
 
-        if (!error && data && data.length > 0) {
-          const p = data[0]
+        if (!error && data) {
+          const p = data
           if (p.name) setName(p.name)
           if (p.avatar_url) setAvatarUrl(p.avatar_url)
           if (p.age) setAge(String(p.age))
@@ -149,14 +151,17 @@ export default function Profile() {
 
     // Salvar no Supabase
     try {
-      const { data: currentProfiles, error: findError } = await supabase
+      const { data: user } = await supabase.auth.getUser()
+      if (!user?.user) throw new Error('Entre na sua conta para sincronizar o perfil.')
+      const { data: currentProfile, error: findError } = await supabase
         .from('profiles')
         .select('id')
-        .order('updated_at', { ascending: false })
-        .limit(1)
+        .eq('user_id', user.user.id)
+        .maybeSingle()
       if (findError) throw findError
 
       const payload = {
+        user_id: user.user.id,
         name: profileData.name,
         avatar_url: profileData.avatarUrl,
         age: profileData.age,
@@ -173,9 +178,9 @@ export default function Profile() {
         preferences_notes: profileData.notes,
         updated_at: new Date().toISOString()
       }
-      const query = currentProfiles?.[0]?.id
-        ? supabase.from('profiles').update(payload).eq('id', currentProfiles[0].id)
-        : supabase.from('profiles').insert([{ ...payload }])
+      const query = currentProfile?.id
+        ? supabase.from('profiles').update(payload).eq('id', currentProfile.id)
+        : supabase.from('profiles').insert([payload])
       const { error } = await query
       if (error) throw error
       toast('Perfil e biometria salvos no Supabase com sucesso!')
