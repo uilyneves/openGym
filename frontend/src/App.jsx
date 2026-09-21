@@ -85,7 +85,7 @@ function Shell() {
               <Route path="/eval" element={<WeightLossEval />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/admin" element={user?.admin ? <Admin /> : <Navigate to="/home" replace />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<Navigate to="/home" replace />} />
             </Routes>
           )}

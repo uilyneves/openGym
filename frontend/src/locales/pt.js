@@ -358,6 +358,9 @@ export default {
   'This app is invite-only — enter the code you were given.': 'Esta app é só por convite — introduz o código que recebeste.',
   'An invite code is required': 'É necessário um código de convite',
   'Admin dashboard': 'Painel de administração',
+  'Administration': 'Administração',
+  'Manage all registered profiles': 'Gerenciar todos os perfis cadastrados',
+  'Manage user profiles, permissions, training goals and system settings.': 'Gerencie perfis de usuários, permissões, objetivos de treino e configurações do sistema.',
   // --- muscle map ---
   'Muscle balance': 'Equilíbrio muscular',
   'by sets worked': 'por séries trabalhadas',

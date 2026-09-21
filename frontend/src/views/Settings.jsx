@@ -200,6 +200,13 @@ export default function Settings() {
     <input ref={importRef} type="file" accept=".csv,.xml,text/csv,text/xml" style={{ display: 'none' }}
       onChange={ev => { const f = ev.target.files[0]; if (f) importFromApp(f); ev.target.value = '' }} />
 
+    {/* ---------- administration ---------- */}
+    <Section title={t('Administration')} footer={t('Manage user profiles, permissions, training goals and system settings.')}>
+      <Row icon="shield" iconTint="var(--indigo)" title={t('Admin dashboard')}
+        subtitle={t('Manage all registered profiles')}
+        accessory="chevron" onClick={() => nav('/admin')} />
+    </Section>
+
     {/* "Add to Home screen" makes no sense inside the native app */}
     {!MOBILE && <Section title={t('Tip')}>
       <Row icon="lightbulb" iconTint="var(--yellow)"
