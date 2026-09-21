@@ -2,6 +2,13 @@
   "name": "opengym",
   "private": true,
   "type": "module",
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "start": "npm run start --prefix api",
+    "preview": "npm run preview --prefix frontend",
+    "test": "npm run test --prefix frontend"
+  },
   "devDependencies": {
     "typescript": "^5.8.2"
   }
