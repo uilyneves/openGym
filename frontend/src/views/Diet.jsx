@@ -5,7 +5,6 @@ import {
   getDiet,
   getDayLog,
   calcDayTotals,
-  addWater,
   MEAL_TYPES,
 } from '../lib/diet.js'
 import { fmtNum, fmtDate, todayISO, isoOf } from '../lib/format.js'
@@ -14,7 +13,6 @@ import {
   mealSheet,
   foodPickerSheet,
   dietTargetsSheet,
-  waterAdjustSheet,
 } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
@@ -36,11 +34,6 @@ export default function Diet() {
     d.setDate(d.getDate() + delta)
     setDateIso(isoOf(d))
   }
-
-  // Water calculations
-  const waterTarget = diet.waterTarget || 2500
-  const waterPct = Math.min(100, Math.round((dayLog.water / waterTarget) * 100))
-  const waterRemaining = Math.max(0, waterTarget - dayLog.water)
 
   // Macro calculations
   const calTarget = diet.calorieTarget || 2200
@@ -70,8 +63,8 @@ export default function Diet() {
       {/* Header */}
       <div className="hdr">
         <div>
-          <h1>{t('Diet & Nutrition')}</h1>
-          <div className="sub">{t('Track food, calories, macros & water intake')}</div>
+          <h1>{t('Alimentação & Dieta')}</h1>
+          <div className="sub">{t('Controle de alimentos, calorias e macronutrientes')}</div>
         </div>
         <Button
           size="sm"
@@ -79,7 +72,7 @@ export default function Diet() {
           icon="target"
           onClick={dietTargetsSheet}
         >
-          {t('Goals')}
+          {t('Metas')}
         </Button>
       </div>
 
@@ -109,115 +102,7 @@ export default function Diet() {
         </div>
       </div>
 
-      {/* 1. Water Intake Card */}
-      <div className="card">
-        <div className="row between" style={{ marginBottom: 8 }}>
-          <div className="row" style={{ gap: 8 }}>
-            <span
-              className="lrow-i"
-              style={{
-                background: 'color-mix(in srgb, var(--sky) 18%, transparent)',
-                color: 'var(--sky)',
-              }}
-            >
-              <Icon name="water" />
-            </span>
-            <div>
-              <h2 style={{ margin: 0 }}>{t('Water Intake')}</h2>
-              <div className="small dim">
-                {dayLog.water >= waterTarget
-                  ? t('Daily hydration goal reached! 🎉')
-                  : t('{0} ml remaining of {1} ml', fmtNum(waterRemaining), fmtNum(waterTarget))}
-              </div>
-            </div>
-          </div>
-          <span
-            className="tag"
-            style={{
-              background: 'color-mix(in srgb, var(--sky) 20%, transparent)',
-              color: 'var(--sky)',
-              fontWeight: 600,
-            }}
-          >
-            {waterPct}%
-          </span>
-        </div>
-
-        {/* Big Water Progress Number & Bar */}
-        <div className="row between" style={{ alignItems: 'baseline', margin: '10px 0 6px' }}>
-          <div className="stat-v" style={{ fontSize: 32, fontWeight: 700, color: 'var(--sky)' }}>
-            {fmtNum(dayLog.water)}{' '}
-            <span style={{ fontSize: 16, fontWeight: 500, color: 'var(--label-3)' }}>/ {fmtNum(waterTarget)} ml</span>
-          </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            icon="pencil"
-            onClick={() => waterAdjustSheet(dayLog.water, dateIso)}
-          >
-            {t('Edit')}
-          </Button>
-        </div>
-
-        <div
-          style={{
-            height: 10,
-            background: 'var(--surface-3)',
-            borderRadius: 5,
-            overflow: 'hidden',
-            marginBottom: 12,
-          }}
-        >
-          <div
-            style={{
-              height: '100%',
-              width: `${waterPct}%`,
-              background: 'var(--sky)',
-              borderRadius: 5,
-              transition: 'width 0.25s ease-out',
-            }}
-          />
-        </div>
-
-        {/* Quick Increment Buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 6 }}>
-          <Button
-            size="sm"
-            variant="tinted"
-            icon="cup"
-            onClick={() => addWater(update, 250, dateIso)}
-          >
-            +250ml
-          </Button>
-          <Button
-            size="sm"
-            variant="tinted"
-            icon="water"
-            onClick={() => addWater(update, 500, dateIso)}
-          >
-            +500ml
-          </Button>
-          <Button
-            size="sm"
-            variant="tinted"
-            icon="water"
-            onClick={() => addWater(update, 1000, dateIso)}
-          >
-            +1L
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="dim"
-            icon="minus"
-            onClick={() => addWater(update, -250, dateIso)}
-          >
-            -250ml
-          </Button>
-        </div>
-      </div>
-
-      {/* 2. Calories & Macros Overview Card */}
+      {/* Calories & Macros Overview Card */}
       <div className="card">
         <div className="row between" style={{ marginBottom: 6 }}>
           <div className="row" style={{ gap: 8 }}>
