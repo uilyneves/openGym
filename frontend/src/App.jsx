@@ -26,6 +26,7 @@ import Settings from './views/Settings.jsx'
 import Diet from './views/Diet.jsx'
 import Water from './views/Water.jsx'
 import AICoach from './views/AICoach.jsx'
+import WeightLossEval from './views/WeightLossEval.jsx'
 import Profile from './views/Profile.jsx'
 import Admin from './views/Admin.jsx'
 
@@ -81,6 +82,7 @@ function Shell() {
               <Route path="/diet" element={<Diet />} />
               <Route path="/water" element={<Water />} />
               <Route path="/ai" element={<AICoach />} />
+              <Route path="/eval" element={<WeightLossEval />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/admin" element={user?.admin ? <Admin /> : <Navigate to="/home" replace />} />

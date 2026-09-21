@@ -13,6 +13,7 @@ import {
   mealSheet,
   foodPickerSheet,
   dietTargetsSheet,
+  aiDietSheet,
 } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
@@ -73,6 +74,14 @@ export default function Diet() {
           onClick={dietTargetsSheet}
         >
           {t('Metas')}
+        </Button>
+        <Button
+          size="sm"
+          variant="primary"
+          icon="sparkles"
+          onClick={aiDietSheet}
+        >
+          {t('AI')}
         </Button>
       </div>
 

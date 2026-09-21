@@ -654,4 +654,12 @@ export default {
   'Workout volume': 'Volume de treino',
   'tonnage per session': 'tonelagem por sessão',
   'Total weight moved (weight × reps) across all exercises in each session.': 'Peso total levantado (peso × repetições) somando todos os exercícios de cada sessão.',
+  'AI Hub': 'Central de IA',
+  'Smart training, diet & evaluation': 'Treino, dieta e avaliação inteligentes',
+  'Build workout': 'Montar treino',
+  'Build diet': 'Montar dieta',
+  'Weight-loss check': 'Avaliar emagrecimento',
+  'Generate with AI': 'Gerar com IA',
+  'AI': 'IA',
+  'AI workout plan applied!': 'Plano de treino da IA aplicado!',
 }

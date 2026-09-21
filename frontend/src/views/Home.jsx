@@ -4,7 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { effectiveRoutine, effectiveRoutineId, streakWeeks, lastBW, setsDoneActive } from '../lib/history.js'
 import { fmtNum, fmtDate, todayISO, isoOf, weekKey, DAYS } from '../lib/format.js'
 import { t, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, loadStarterPlan, bwDeltaColor } from '../sheets.jsx'
+import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, loadStarterPlan, bwDeltaColor, aiWorkoutSheet, aiDietSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
@@ -88,6 +88,25 @@ export default function Home() {
 
     <DietWidget />
     <HydrationWidget />
+
+    {/* Central de IA — gera planos e avalia a evolução com 1 toque */}
+    <div className="card">
+      <div className="row between" style={{ marginBottom: 8 }}>
+        <div className="row" style={{ gap: 9 }}>
+          <span className="lrow-i" style={{ background: 'color-mix(in srgb, var(--acc) 18%, transparent)', color: 'var(--acc)' }}><Icon name="sparkles" /></span>
+          <div>
+            <h2 style={{ margin: 0 }}>{t('AI Hub')}</h2>
+            <div className="small dim">{t('Smart training, diet & evaluation')}</div>
+          </div>
+        </div>
+        <Icon name="chevronRight" className="chev dim" onClick={() => nav('/ai')} />
+      </div>
+      <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+        <Button size="sm" variant="tinted" icon="dumbbell" onClick={aiWorkoutSheet}>{t('Build workout')}</Button>
+        <Button size="sm" variant="tinted" icon="utensils" onClick={aiDietSheet}>{t('Build diet')}</Button>
+        <Button size="sm" variant="tinted" icon="chartLine" onClick={() => nav('/eval')}>{t('Weight-loss check')}</Button>
+      </div>
+    </div>
 
     {!S.routines.length && !S.active && (
       <div className="card">

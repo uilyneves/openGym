@@ -433,12 +433,18 @@ export default function Profile() {
       </div>
 
       {/* Ação de Ir para a IA */}
-      <div style={{ marginTop: 24, textAlign: 'center' }}>
+      <div style={{ marginTop: 24, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <Button variant="primary" icon="sparkles" onClick={async () => {
           await saveProfile()
           nav('/ai')
         }}>
-          Salvar e Pedir Avaliação ao Coach IA
+          Salvar e Falar com o Coach IA
+        </Button>
+        <Button variant="tinted" icon="chartLine" onClick={async () => {
+          await saveProfile()
+          nav('/eval')
+        }}>
+          Salvar e Avaliar Meu Emagrecimento
         </Button>
       </div>
     </div>

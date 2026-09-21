@@ -119,6 +119,7 @@ const P = {
   cup: <><path d="M6 4.5h12l-1.8 14.5a2 2 0 0 1-2 1.8H9.8a2 2 0 0 1-2-1.8Z" /><path d="M6 10h12" /></>,
   utensils: <><path d="M6 4v6a2 2 0 0 0 2 2v8M10 4v6a2 2 0 0 1-2 2M8 4v4M15 4v16M15 4a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3" /></>,
   apple: <><path d="M12 7.5c-2.4-2.2-6.5-1.5-6.5 3 0 5 4.5 9 6.5 9s6.5-4 6.5-9c0-4.5-4.1-5.2-6.5-3Z" /><path d="M12 7.5C12 4.5 14 3.5 15 3.5" /></>,
+  mic: <><rect x="9.2" y="3.4" width="5.6" height="10.4" rx="2.8" /><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0M12 17.6v3M9.2 20.6h5.6" /></>,
 }
 
 // A few keys are aliases so call sites can say what they mean.

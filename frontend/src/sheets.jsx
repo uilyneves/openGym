@@ -23,6 +23,7 @@ import { MOBILE, shareExport } from './lib/mobile.js'
 import PlateCalculator from './components/PlateCalculator.jsx'
 import OneRMCalculator from './components/OneRMCalculator.jsx'
 import { MealFormSheet, FoodPickerSheet, DietTargetsSheet, WaterAdjustSheet } from './sheets/DietSheets.jsx'
+import { AIWorkoutSheet, AIDietSheet } from './sheets/AISheets.jsx'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -402,6 +403,10 @@ export const foodPickerSheet = (defaultType = 'lunch', iso = todayISO()) =>
   ))
 
 export const dietTargetsSheet = () => ui().openSheet(close => <DietTargetsSheet close={close} />)
+
+/* ============================ AI plan generators (issue: IA total) ============================ */
+export const aiWorkoutSheet = () => ui().openSheet(close => <AIWorkoutSheet close={close} />)
+export const aiDietSheet = () => ui().openSheet(close => <AIDietSheet close={close} />)
 export const waterAdjustSheet = (currentMl = 0, iso = todayISO()) =>
   ui().openSheet(close => <WaterAdjustSheet currentMl={currentMl} iso={iso} close={close} />)
 
