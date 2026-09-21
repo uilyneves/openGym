@@ -662,4 +662,10 @@ export default {
   'Generate with AI': 'Gerar com IA',
   'AI': 'IA',
   'AI workout plan applied!': 'Plano de treino da IA aplicado!',
+  'Let the AI build your weekly plan around your profile, goal and equipment — in seconds.': 'Deixe a IA montar seu plano semanal com base no seu perfil, objetivo e equipamento — em segundos.',
+  'Generate my plan with AI': 'Gerar meu plano com IA',
+  'Create manually': 'Criar manualmente',
+  'Create one, or let the AI build it.': 'Crie uma, ou deixe a IA montar para você.',
+  'OmniRoute integration (AI)': 'Integração OmniRoute (IA)',
+  'API key, endpoint and model for every AI feature': 'Chave, endpoint e modelo para todos os recursos de IA',
 }

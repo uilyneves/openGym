@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { fmtNum } from '../lib/format.js'
 import { isAIConnected } from '../lib/ai.js'
-import { evaluateWeightLoss, aiEvaluateWeightLoss } from '../lib/aiPlanner.js'
+import { evaluateWeightLoss, aiEvaluateWeightLoss, getFitnessProfile } from '../lib/aiPlanner.js'
 import { getDiet } from '../lib/diet.js'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
@@ -50,6 +50,7 @@ export default function WeightLossEval() {
   const m = evaluateWeightLoss(S)
   const st = STATUS[m.status] || STATUS['sem-dados']
   const hasData = m.weighIns >= 2
+  const hasHeight = !!Number(getFitnessProfile().heightCm)
 
   const runAI = async () => {
     setLoading(true)
@@ -92,7 +93,9 @@ export default function WeightLossEval() {
           <Metric icon="chartLine" label="Ritmo médio" value={m.avgRate != null ? `${fmtNum(Math.abs(m.avgRate))} kg/sem` : '—'} hint="faixa saudável: 0,25–1,0" />
           <Metric icon="bolt" label="Tendência recente" value={m.trend != null ? `${m.trend > 0 ? '+' : m.trend < 0 ? '−' : ''}${fmtNum(Math.abs(m.trend))} kg/sem` : '—'} hint="últimas pesagens" accent={m.trend != null && m.trend < 0 ? 'var(--green)' : 'var(--yellow)'} />
           <Metric icon="target" label="Para a meta" value={m.remaining != null ? (m.remaining > 0 ? `${fmtNum(m.remaining)} kg` : 'Conquistada!') : 'sem meta'} hint={m.etaWeeks ? `~${m.etaWeeks} semanas no ritmo atual` : S.targetW ? 'defina ritmo com a IA' : 'defina em Home › Meta'} accent="var(--yellow)" />
-          {m.bmi != null && <Metric icon="calc" label="IMC" value={fmtNum(m.bmi)} hint={m.bmi < 18.5 ? 'abaixo do peso' : m.bmi < 25 ? 'peso normal' : m.bmi < 30 ? 'sobrepeso' : 'obesidade'} />}
+          {m.bmi != null
+            ? <Metric icon="calc" label="IMC" value={fmtNum(m.bmi)} hint={m.bmi < 18.5 ? 'abaixo do peso' : m.bmi < 25 ? 'peso normal' : m.bmi < 30 ? 'sobrepeso' : 'obesidade'} />
+            : <Metric icon="calc" label="IMC" value="—" hint={hasHeight ? '' : 'adicione sua altura no perfil'} />}
           <Metric icon="dumbbell" label="Aderência treino" value={`${m.workoutAdherence}%`} hint={`${m.workouts28} treinos em 28 dias`} />
           <Metric icon="flame" label="Aderência dieta" value={m.dietAdherence != null ? `${m.dietAdherence}%` : '—'} hint={m.kcalAvg != null ? `média ${m.kcalAvg} / ${diet.calorieTarget} kcal` : 'sem registros'} />
         </div>

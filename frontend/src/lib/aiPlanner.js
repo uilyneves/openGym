@@ -8,12 +8,46 @@ import { uid, todayISO } from './format.js'
 import { workoutVolume } from './history.js'
 import { COMMON_FOODS, calcSmartTargets, getDiet } from './diet.js'
 import { aiJSON, isAIConnected } from './ai.js'
+import { supabase } from '../integrations/supabase/client.js'
 import { useStore } from '../store/useStore.js'
 
 /* ============================ athlete profile & context ============================ */
 
 export function getFitnessProfile() {
   try { return JSON.parse(localStorage.getItem('user_fitness_profile') || '{}') } catch { return {} }
+}
+
+// The four fields the AI genuinely needs to personalize anything. Returns the
+// missing ones so the generator sheets can ask for exactly those inline.
+export function profileMissing(p = getFitnessProfile()) {
+  const missing = []
+  if (!p.weightKg || !(Number(p.weightKg) > 0)) missing.push('weightKg')
+  if (!p.heightCm || !(Number(p.heightCm) > 0)) missing.push('heightCm')
+  if (!p.age || !(Number(p.age) > 0)) missing.push('age')
+  if (!p.fitnessGoal) missing.push('fitnessGoal')
+  return missing
+}
+
+// Merge partial profile data into the anamnesis (local first, cloud best-effort)
+// and log the weight so the AI always works with a fresh bodyweight series.
+export async function saveFitnessProfile(patch) {
+  const next = { ...getFitnessProfile(), ...patch, updatedAt: new Date().toISOString() }
+  localStorage.setItem('user_fitness_profile', JSON.stringify(next))
+  if (patch.weightKg && Number(patch.weightKg) > 0) {
+    try { useStore.getState().logBW(Number(patch.weightKg), todayISO()) } catch { /* store not ready */ }
+  }
+  try {
+    await supabase.from('profiles').insert([{
+      name: next.name || null,
+      age: next.age ? Number(next.age) : null,
+      gender: next.gender || null,
+      height_cm: next.heightCm ? Number(next.heightCm) : null,
+      weight_kg: next.weightKg ? Number(next.weightKg) : null,
+      fitness_goal: next.fitnessGoal || null,
+      updated_at: new Date().toISOString()
+    }])
+  } catch { /* offline — local copy is enough */ }
+  return next
 }
 
 // Everything the AI should know about the athlete: anamnesis + live openGym data.

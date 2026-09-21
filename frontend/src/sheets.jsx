@@ -7,7 +7,6 @@ import { lastEntryFor, bestWeightFor, buildSets, effectiveRoutineId, workoutVolu
 import { beep, vibrate } from './lib/sound.js'
 import { t, instrFor, getLang, INSTR_LANGS } from './lib/i18n.js'
 import { nav } from './lib/nav.js'
-import { starterRoutines } from './lib/starter.js'
 import Media, { Thumb } from './components/Media.jsx'
 import Stepper from './components/Stepper.jsx'
 import Icon from './components/Icon.jsx'
@@ -23,7 +22,7 @@ import { MOBILE, shareExport } from './lib/mobile.js'
 import PlateCalculator from './components/PlateCalculator.jsx'
 import OneRMCalculator from './components/OneRMCalculator.jsx'
 import { MealFormSheet, FoodPickerSheet, DietTargetsSheet, WaterAdjustSheet } from './sheets/DietSheets.jsx'
-import { AIWorkoutSheet, AIDietSheet } from './sheets/AISheets.jsx'
+import { AIWorkoutSheet, AIDietSheet, AIConfigSheet } from './sheets/AISheets.jsx'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -44,16 +43,6 @@ function ConfirmDialog({ title, message, confirmText, cancelText, danger, onConf
 // Themed replacement for window.confirm — callback-based (no blocking).
 export function confirmSheet(opts) {
   ui().openSheet(close => <ConfirmDialog {...opts} close={close} />, { kind: 'center' })
-}
-
-/* ============================ starter plan ============================ */
-export function loadStarterPlan() {
-  const [push, pull, legs] = starterRoutines()
-  update(st => {
-    st.routines.push(push, pull, legs)
-    st.week[1] = push.id; st.week[3] = pull.id; st.week[5] = legs.id
-  })
-  toast(t('Starter plan loaded — Mon Push · Wed Pull · Fri Legs'))
 }
 
 /* ============================ weight picker (shared: body weight + goal) ============================ */
@@ -407,6 +396,7 @@ export const dietTargetsSheet = () => ui().openSheet(close => <DietTargetsSheet 
 /* ============================ AI plan generators (issue: IA total) ============================ */
 export const aiWorkoutSheet = () => ui().openSheet(close => <AIWorkoutSheet close={close} />)
 export const aiDietSheet = () => ui().openSheet(close => <AIDietSheet close={close} />)
+export const aiConfigSheet = () => ui().openSheet(close => <AIConfigSheet close={close} />)
 export const waterAdjustSheet = (currentMl = 0, iso = todayISO()) =>
   ui().openSheet(close => <WaterAdjustSheet currentMl={currentMl} iso={iso} close={close} />)
 

@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { supabase } from '../integrations/supabase/client.js'
-import { aiConfig, saveAIConfig, aiChat, isAIConnected, DEFAULT_MODELS } from '../lib/ai.js'
-import { buildBodyContext } from '../lib/aiPlanner.js'
+import { aiConfig, syncAIConfigFromCloud, aiChat, isAIConnected } from '../lib/ai.js'
+import { buildBodyContext, profileMissing } from '../lib/aiPlanner.js'
 import { aiWorkoutSheet, aiDietSheet } from '../sheets.jsx'
+import { AIConfigForm } from '../sheets/AISheets.jsx'
 import { Button } from '../components/ui.jsx'
 import Icon from '../components/Icon.jsx'
 
@@ -31,11 +32,27 @@ export default function AICoach() {
 
   // Configurações OmniRoute (compartilhadas com todos os recursos de IA do app)
   const cfg = aiConfig()
-  const [apiKey, setApiKey] = useState(cfg.apiKey)
-  const [endpoint, setEndpoint] = useState(cfg.endpoint)
   const [model, setModel] = useState(cfg.model)
   const [customModel, setCustomModel] = useState('')
   const [showConfig, setShowConfig] = useState(!cfg.apiKey)
+  const [connected, setConnected] = useState(!!cfg.apiKey)
+  const profileOk = profileMissing().length === 0
+  const activeModel = customModel.trim() || aiConfig().model
+
+  // Fresh device / new session: pull the OmniRoute credentials this user saved
+  // in the cloud so every AI feature is live without asking again.
+  useEffect(() => {
+    if (!cfg.apiKey) {
+      syncAIConfigFromCloud().then(c => {
+        if (c) {
+          setModel(c.model)
+          setConnected(true); setShowConfig(false)
+          toast('Integração OmniRoute restaurada da sua conta!')
+        }
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Mensagens do Chat
   const [messages, setMessages] = useState([])
@@ -77,20 +94,12 @@ export default function AICoach() {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [messages, loading])
 
-  // Salvar configurações de IA (local + nuvem)
-  const saveConfig = async () => {
-    const selectedModel = customModel.trim() || model
-    saveAIConfig({ apiKey, endpoint, model: selectedModel })
+  // Salvar configurações de IA (local + nuvem) — delegado ao formulário compartilhado
+  const onConfigSaved = () => {
+    const c = aiConfig()
+    setModel(c.model); setCustomModel('')
+    setConnected(!!c.apiKey)
     setShowConfig(false)
-    toast('Configurações do OmniRoute salvas com sucesso!')
-    try {
-      await supabase.from('user_targets').upsert([{
-        omniroute_api_key: apiKey.trim(),
-        omniroute_endpoint: endpoint.trim(),
-        omniroute_model: selectedModel,
-        updated_at: new Date().toISOString()
-      }])
-    } catch (err) { console.warn('Erro salvando no supabase:', err) }
   }
 
   // ---- comando de voz (Web Speech API, pt-BR) com fallback silencioso ----
@@ -194,8 +203,11 @@ Ao montar ou sugerir treinos e dietas:
             <span style={{ color: 'var(--acc)' }}><Icon name="sparkles" size={24} /></span>
             Coach IA
           </h1>
-          <div style={{ fontSize: 12, color: 'var(--label-2)', marginTop: 2 }}>
-            {isAIConnected() ? <>Modelo ativo: <strong>{customModel.trim() || model}</strong></> : <span style={{ color: 'var(--yellow)' }}>Modo demonstração — configure sua chave</span>}
+          <div style={{ fontSize: 12, color: 'var(--label-2)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className="dot" style={{ width: 8, height: 8, borderRadius: 99, background: connected ? 'var(--green)' : 'var(--yellow)', display: 'inline-block' }} />
+            {connected
+              ? <>OmniRoute: <strong>{customModel.trim() || model}</strong></>
+              : <span style={{ color: 'var(--yellow)' }}>Modo demonstração — configure sua chave</span>}
           </div>
         </div>
         <Button variant="ghost" size="sm" icon="gear" onClick={() => setShowConfig(!showConfig)}>
@@ -203,33 +215,13 @@ Ao montar ou sugerir treinos e dietas:
         </Button>
       </div>
 
-      {/* Painel de Configuração do OmniRoute */}
+      {/* Painel de Configuração do OmniRoute (formulário compartilhado com Configurações) */}
       {showConfig && (
         <div className="card" style={{ margin: '12px 0', padding: 14, background: 'var(--surface-2)' }}>
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8, color: 'var(--acc)' }}>
-            Configurações da IA (OmniRoute / OpenAI API)
+            Integração OmniRoute / OpenAI API
           </div>
-          <div style={{ marginBottom: 10 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--label-2)', display: 'block', marginBottom: 4 }}>Chave de API (OmniRoute / OpenAI / DeepSeek)</label>
-            <input type="password" value={apiKey} placeholder="Ex: sk-omniroute-..." onChange={e => setApiKey(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--sep)', background: 'var(--surface)', color: 'var(--fg)' }} />
-          </div>
-          <div style={{ marginBottom: 10 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--label-2)', display: 'block', marginBottom: 4 }}>Endpoint da API</label>
-            <input type="text" value={endpoint} placeholder="https://api.omniroute.ai/v1" onChange={e => setEndpoint(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--sep)', background: 'var(--surface)', color: 'var(--fg)' }} />
-          </div>
-          <div style={{ marginBottom: 10 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--label-2)', display: 'block', marginBottom: 4 }}>Escolha o Modelo de IA</label>
-            <select value={model} onChange={e => setModel(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--sep)', background: 'var(--surface)', color: 'var(--fg)' }}>
-              {DEFAULT_MODELS.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-            </select>
-          </div>
-          <div style={{ marginBottom: 12 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--label-2)', display: 'block', marginBottom: 4 }}>Ou digite outro modelo customizado</label>
-            <input type="text" value={customModel} placeholder="Ex: o1, claude-3-haiku, mistral-large..." onChange={e => setCustomModel(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--sep)', background: 'var(--surface)', color: 'var(--fg)' }} />
-          </div>
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-            <Button variant="primary" size="sm" onClick={saveConfig}>Salvar Configurações</Button>
-          </div>
+          <AIConfigForm onSaved={onConfigSaved} />
         </div>
       )}
 
@@ -251,7 +243,25 @@ Ao montar ou sugerir treinos e dietas:
             <span className="small dim" style={{ fontSize: 11 }}>Diagnóstico da evolução</span>
           </span>
         </button>
+        <button className="card" onClick={() => nav('/profile')} style={{ flex: '1 1 140px', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', textAlign: 'left', minWidth: 140 }}>
+          <span className="lrow-i" style={{ background: profileOk ? 'color-mix(in srgb, var(--teal) 16%, transparent)' : 'color-mix(in srgb, var(--yellow) 20%, transparent)', color: profileOk ? 'var(--teal)' : 'var(--yellow)' }}><Icon name="personCircle" /></span>
+          <span style={{ minWidth: 0 }}>
+            <span style={{ display: 'block', fontWeight: 600, fontSize: 13 }}>Meu perfil</span>
+            <span className="small dim" style={{ fontSize: 11 }}>{profileOk ? 'Completo para a IA' : 'Faltam dados — toque'}</span>
+          </span>
+        </button>
       </div>
+
+      {/* A IA só personaliza de verdade com anamnese completa */}
+      {!profileOk && (
+        <div className="card" style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--yellow) 8%, var(--surface-2))', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Icon name="personCircle" style={{ color: 'var(--yellow)', fontSize: 18 }} />
+          <div className="small grow" style={{ minWidth: 0 }}>
+            <strong>Complete seu perfil</strong> — peso, altura, idade e objetivo deixam as respostas, treinos e dietas muito mais precisos.
+          </div>
+          <Button size="sm" variant="tinted" onClick={() => nav('/profile')}>Preencher</Button>
+        </div>
+      )}
 
       {/* Lista de Mensagens */}
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 0', display: 'flex', flexDirection: 'column', gap: 12 }}>

@@ -3,6 +3,8 @@
 // Every AI feature (coach chat, plan generators, weight-loss evaluation) funnels
 // through here so the API key / endpoint / model are configured exactly once.
 
+import { supabase } from '../integrations/supabase/client.js'
+
 const LS_KEY = 'omniroute_api_key'
 const LS_ENDPOINT = 'omniroute_endpoint'
 const LS_MODEL = 'omniroute_model'
@@ -32,6 +34,53 @@ export function saveAIConfig({ apiKey, endpoint, model }) {
 }
 
 export const isAIConnected = () => !!aiConfig().apiKey
+
+// Mirror the config into `user_targets` so every device the user signs in on
+// picks the OmniRoute credentials up automatically (see syncAIConfigFromCloud).
+export async function saveAIConfigToCloud(cfg) {
+  try {
+    await supabase.from('user_targets').upsert([{
+      omniroute_api_key: cfg.apiKey,
+      omniroute_endpoint: cfg.endpoint,
+      omniroute_model: cfg.model,
+      updated_at: new Date().toISOString()
+    }])
+  } catch { /* offline / guest — local copy already saved */ }
+}
+
+/**
+ * Pull the OmniRoute credentials saved in `user_targets` (written by any device
+ * where the user configured the AI) into this device when nothing is set
+ * locally. Keeps the login silent: errors just mean "nothing in the cloud".
+ */
+export async function syncAIConfigFromCloud() {
+  if (aiConfig().apiKey) return aiConfig()
+  try {
+    const { data, error } = await supabase
+      .from('user_targets')
+      .select('omniroute_api_key, omniroute_endpoint, omniroute_model')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+    const row = !error && data && data[0]
+    if (row && row.omniroute_api_key) {
+      saveAIConfig({ apiKey: row.omniroute_api_key, endpoint: row.omniroute_endpoint, model: row.omniroute_model })
+      return aiConfig()
+    }
+  } catch { /* offline / guest — local config wins */ }
+  return null
+}
+
+// Real round-trip to the configured endpoint — used by the "Test connection"
+// button so the user gets immediate feedback on key/endpoint/model validity.
+export async function testAIConnection() {
+  const t0 = Date.now()
+  try {
+    const answer = await aiChat([{ role: 'user', content: 'Responda apenas: ok' }], { temperature: 0, system: 'Responda com uma única palavra.' })
+    return { ok: true, ms: Date.now() - t0, answer: answer.trim().slice(0, 40) }
+  } catch (e) {
+    return { ok: false, ms: Date.now() - t0, error: e.message }
+  }
+}
 
 /**
  * Chat completion. `messages` = [{role, content}] WITHOUT the system prompt.
