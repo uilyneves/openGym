@@ -70,9 +70,12 @@ export default function AICoach() {
   useEffect(() => {
     async function loadChatHistory() {
       try {
+        const { data: user } = await supabase.auth.getUser()
+        if (!user?.user) return
         const { data, error } = await supabase
           .from('ai_chat_messages')
           .select('*')
+          .eq('user_id', user.user.id)
           .order('created_at', { ascending: true })
           .limit(50)
 
@@ -123,7 +126,16 @@ export default function AICoach() {
   }
 
   const persist = async (role, content, modelUsed) => {
-    try { await supabase.from('ai_chat_messages').insert([{ role, content, model_used: modelUsed }]) } catch {}
+    try {
+      const { data: user } = await supabase.auth.getUser()
+      if (!user?.user) return
+      await supabase.from('ai_chat_messages').insert([{
+        user_id: user.user.id,
+        role,
+        content,
+        model_used: modelUsed
+      }])
+    } catch {}
   }
 
   // Enviar mensagem para o OmniRoute

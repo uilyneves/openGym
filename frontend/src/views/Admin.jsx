@@ -50,6 +50,10 @@ function EditProfileSheet({ profile, onSave, close }) {
       toast('Nome é obrigatório')
       return
     }
+    if (isNew) {
+      toast('Criação de perfis deve começar pelo cadastro do usuário.')
+      return
+    }
 
     setSaving(true)
     const payload = {
@@ -73,18 +77,12 @@ function EditProfileSheet({ profile, onSave, close }) {
     }
 
     try {
-      if (isNew) {
-        const { error } = await supabase.from('profiles').insert([payload])
-        if (error) throw error
-        toast('Novo perfil criado com sucesso!')
-      } else {
-        const { error } = await supabase
-          .from('profiles')
-          .update(payload)
-          .eq('id', profile.id)
-        if (error) throw error
-        toast('Perfil atualizado com sucesso!')
-      }
+      const { error } = await supabase
+        .from('profiles')
+        .update(payload)
+        .eq('id', profile.id)
+      if (error) throw error
+      toast('Perfil atualizado com sucesso!')
       onSave?.()
       close()
     } catch (err) {

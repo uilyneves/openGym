@@ -28,14 +28,14 @@ export default function Water() {
   const handleLog = async (ml) => {
     addWater(update, ml, date)
     toast(`+${ml}ml de água registrado!`)
-    try {
-      await supabase.from('water_logs').insert([{
-        date: date,
-        amount_ml: ml
-      }])
-    } catch (e) {
-      console.warn('Erro ao sincronizar água com Supabase:', e)
-    }
+    const { data: user } = await supabase.auth.getUser()
+    if (!user?.user) return
+    const { error } = await supabase.from('water_logs').insert([{
+      user_id: user.user.id,
+      date,
+      amount_ml: ml
+    }])
+    if (error) console.warn('Erro ao sincronizar água com Supabase:', error)
   }
 
   // Carrega histórico remoto do Supabase para o dia
@@ -43,9 +43,12 @@ export default function Water() {
     async function loadRemoteWater() {
       setLoadingSync(true)
       try {
+        const { data: user } = await supabase.auth.getUser()
+        if (!user?.user) return
         const { data, error } = await supabase
           .from('water_logs')
           .select('*')
+          .eq('user_id', user.user.id)
           .eq('date', date)
           .order('created_at', { ascending: false })
         if (!error && data) {

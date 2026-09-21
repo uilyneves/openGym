@@ -38,7 +38,10 @@ export async function saveFitnessProfile(patch) {
     try { useStore.getState().logBW(Number(patch.weightKg), todayISO()) } catch { /* store not ready */ }
   }
   try {
-    await supabase.from('profiles').insert([{
+    const { data: user } = await supabase.auth.getUser()
+    if (!user?.user) return next
+    const payload = {
+      user_id: user.user.id,
       name: next.name || null,
       avatar_url: next.avatarUrl || null,
       age: next.age ? Number(next.age) : null,
@@ -54,7 +57,17 @@ export async function saveFitnessProfile(patch) {
       injuries_limitations: next.injuries || null,
       preferences_notes: next.notes || null,
       updated_at: new Date().toISOString()
-    }])
+    }
+    const { data: existing, error: findError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', user.user.id)
+      .maybeSingle()
+    if (findError) return next
+    const query = existing?.id
+      ? supabase.from('profiles').update(payload).eq('id', existing.id)
+      : supabase.from('profiles').insert([payload])
+    await query
   } catch { /* offline — local copy is enough */ }
   return next
 }
@@ -66,13 +79,15 @@ export async function syncFitnessProfileFromCloud() {
   const local = getFitnessProfile()
   if (local.weightKg && local.heightCm && local.age && local.fitnessGoal) return local
   try {
+    const { data: user } = await supabase.auth.getUser()
+    if (!user?.user) return local
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .order('updated_at', { ascending: false })
-      .limit(1)
-    if (!error && data && data.length > 0) {
-      const p = data[0]
+      .eq('user_id', user.user.id)
+      .maybeSingle()
+    if (!error && data) {
+      const p = data
       const merged = {
         ...local,
         name: p.name || local.name || '',

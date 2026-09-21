@@ -39,12 +39,15 @@ export const isAIConnected = () => !!aiConfig().apiKey
 // picks the OmniRoute credentials up automatically (see syncAIConfigFromCloud).
 export async function saveAIConfigToCloud(cfg) {
   try {
+    const { data: user } = await supabase.auth.getUser()
+    if (!user?.user) return
     await supabase.from('user_targets').upsert([{
+      user_id: user.user.id,
       omniroute_api_key: cfg.apiKey,
       omniroute_endpoint: cfg.endpoint,
       omniroute_model: cfg.model,
       updated_at: new Date().toISOString()
-    }])
+    }], { onConflict: 'user_id' })
   } catch { /* offline / guest — local copy already saved */ }
 }
 
@@ -56,11 +59,13 @@ export async function saveAIConfigToCloud(cfg) {
 export async function syncAIConfigFromCloud() {
   if (aiConfig().apiKey) return aiConfig()
   try {
+    const { data: user } = await supabase.auth.getUser()
+    if (!user?.user) return null
     const { data, error } = await supabase
       .from('user_targets')
       .select('omniroute_api_key, omniroute_endpoint, omniroute_model')
-      .order('updated_at', { ascending: false })
-      .limit(1)
+      .eq('user_id', user.user.id)
+      .maybeSingle()
     const row = !error && data && data[0]
     if (row && row.omniroute_api_key) {
       saveAIConfig({ apiKey: row.omniroute_api_key, endpoint: row.omniroute_endpoint, model: row.omniroute_model })

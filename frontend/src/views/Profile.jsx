@@ -149,7 +149,14 @@ export default function Profile() {
 
     // Salvar no Supabase
     try {
-      await supabase.from('profiles').insert([{
+      const { data: currentProfiles, error: findError } = await supabase
+        .from('profiles')
+        .select('id')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+      if (findError) throw findError
+
+      const payload = {
         name: profileData.name,
         avatar_url: profileData.avatarUrl,
         age: profileData.age,
@@ -165,7 +172,12 @@ export default function Profile() {
         injuries_limitations: profileData.injuries,
         preferences_notes: profileData.notes,
         updated_at: new Date().toISOString()
-      }])
+      }
+      const query = currentProfiles?.[0]?.id
+        ? supabase.from('profiles').update(payload).eq('id', currentProfiles[0].id)
+        : supabase.from('profiles').insert([{ ...payload }])
+      const { error } = await query
+      if (error) throw error
       toast('Perfil e biometria salvos no Supabase com sucesso!')
     } catch (err) {
       console.warn('Erro ao salvar no Supabase:', err)
